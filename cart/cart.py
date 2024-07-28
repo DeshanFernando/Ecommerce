@@ -1,8 +1,10 @@
-from store.models import Product
+from store.models import Product, Profile
 
 class Cart():
     def __init__(self, request):
         self.session = request.session
+        # get request for user identification
+        self.request = request
 
         cart = self.session.get('session_key')
 
@@ -21,6 +23,18 @@ class Cart():
             self.cart[product_id] = int(product_qty)
 
         self.session.modified = True
+
+        if self.request.user.is_authenticated:
+            current_user = Profile.objects.filter(user__id=self.request.user.id)
+
+            # convert cart dictionary to str cause old_cart field is type of str
+            carty = str(self.cart)
+            carty = carty.replace("'", "\"")
+
+            # update profile with cart
+            current_user.update(old_cart=carty)
+
+
 
 
     def cart_total(self):

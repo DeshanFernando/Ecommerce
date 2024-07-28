@@ -12,5 +12,6 @@ urlpatterns = [
     path('update_password/', views.update_password, name='update_password'),
     path('product/<int:pk>', views.product, name='product'),
     path('category/<str:name>', views.category, name='category'),
-    path('category_summary/', views.category_summary, name='category_summary')
+    path('category_summary/', views.category_summary, name='category_summary'),
+    path('search/', views.search, name='search'),
 ]

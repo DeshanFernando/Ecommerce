@@ -4,6 +4,21 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .forms import SignUpForm, UserUpdateForm, ChangePasswordForm, UserInforForm
+from django.db.models import Q
+
+
+def search(request):
+    if request.method == 'POST':
+        searched = request.POST['searched']
+        searched = Product.objects.filter(Q(name__icontains=searched) | Q(description__icontains=searched))
+
+        if not searched:
+             messages.success(request, ("The product you searched doesn't exist. Please try again...."))
+             return render(request, 'search.html', {})
+        else:
+            return render(request, 'search.html', {'searched':searched})
+    else:
+        return render(request, 'search.html', {})
 
 def update_info(request):
     if request.user.is_authenticated:
