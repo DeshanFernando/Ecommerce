@@ -15,7 +15,10 @@ class Cart():
         self.cart = cart
 
     def add(self, product, quantity):
-        product_id = str(product.id)
+        if type(product) == str:
+            product_id = product
+        else:
+            product_id = str(product.id)
         product_qty = str(quantity)
 
 
@@ -78,6 +81,16 @@ class Cart():
 
         self.session.modified = True
 
+        if self.request.user.is_authenticated:
+            current_user = Profile.objects.filter(user__id=self.request.user.id)
+
+            # convert cart dictionary to str cause old_cart field is type of str
+            carty = str(self.cart)
+            carty = carty.replace("'", "\"")
+
+            # update profile with cart
+            current_user.update(old_cart=carty)
+
     
     def delete(self, product):
         product_id = str(product)
@@ -86,6 +99,16 @@ class Cart():
             self.cart.pop(product_id)
 
         self.session.modified = True
+
+        if self.request.user.is_authenticated:
+            current_user = Profile.objects.filter(user__id=self.request.user.id)
+
+            # convert cart dictionary to str cause old_cart field is type of str
+            carty = str(self.cart)
+            carty = carty.replace("'", "\"")
+
+            # update profile with cart
+            current_user.update(old_cart=carty)
 
 
     

@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from .forms import SignUpForm, UserUpdateForm, ChangePasswordForm, UserInforForm
 from django.db.models import Q
+import json
+from cart.cart import Cart
 
 
 def search(request):
@@ -90,6 +92,16 @@ def login_user(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+
+            # do some shopping cart stuff
+            current_user = Profile.objects.get(user__id=request.user.id)
+            saved_cart = current_user.old_cart
+            converted_cart = json.loads(saved_cart)
+            cart = Cart(request)
+
+            for key, value in converted_cart.items():
+                cart.add(product=key, quantity=value)
+
             messages.success(request, ("You have been logged in!."))
             return redirect('/')
         else:
