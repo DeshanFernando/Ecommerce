@@ -4,6 +4,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .forms import SignUpForm, UserUpdateForm, ChangePasswordForm, UserInforForm
+
+from payment.forms import ShippingForm
+from payment.models import ShippingAddress
+
 from django.db.models import Q
 import json
 from cart.cart import Cart
@@ -25,14 +29,18 @@ def search(request):
 def update_info(request):
     if request.user.is_authenticated:
         current_user = Profile.objects.get(user__id=request.user.id)
-        form = UserInforForm(request.POST or None, instance=current_user)
+        shipping_user = ShippingAddress.objects.get(user__id=request.user.id)
 
-        if form.is_valid():
+        form = UserInforForm(request.POST or None, instance=current_user)
+        shipping_form = ShippingForm(request.POST or None, instance=shipping_user)
+
+        if form.is_valid() or shipping_form.is_valid():
             form.save()
+            shipping_form.save()
 
             messages.success(request, ("User info have been updated successfully."))
             return redirect('/')
-        return render(request, 'update_info.html', {'form':form})
+        return render(request, 'update_info.html', {'form':form, 'shipping_form':shipping_form})
     else:
         messages.success(request, ("You must be logged in to access this page."))
         return redirect('/')
@@ -96,7 +104,12 @@ def login_user(request):
             # do some shopping cart stuff
             current_user = Profile.objects.get(user__id=request.user.id)
             saved_cart = current_user.old_cart
-            converted_cart = json.loads(saved_cart)
+            # check for empty cart
+            if saved_cart:
+                converted_cart = json.loads(saved_cart)
+            else:
+                converted_cart = {}
+                
             cart = Cart(request)
 
             for key, value in converted_cart.items():
