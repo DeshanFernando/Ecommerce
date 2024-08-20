@@ -7,6 +7,21 @@ from payment.forms import ShippingForm, BillingForm
 from payment.models import ShippingAddress, Order, OrderItem
 from store.models import Product
 
+def shipped_dash(request):
+    if request.user.is_authenticated and request.user.is_superuser:
+        return render(request, "payment/shipped_dash.html")
+    else:
+        messages.success(request, "Access Denied")
+        return redirect('/')
+
+
+def not_shipped_dash(request):
+    if request.user.is_authenticated and request.user.is_superuser:
+        return render(request, "payment/not_shipped_dash.html")
+    else:
+        messages.success(request, "Access Denied")
+        return redirect('/')
+
 def process_order(request):
     if request.POST:
         cart = Cart(request)
